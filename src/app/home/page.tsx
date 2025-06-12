@@ -18,14 +18,11 @@ export default async function HomePage() {
         GIMYO BLOG에 오신것을 환영합니다.
       </div>
 
-      {/* 💡 본문 영역: 좌우 2단 분할 */}
       <div className="flex gap-6">
-        {/* ✅ 왼쪽: ToDo 리스트 */}
         <div className="flex-1 border rounded p-4">
           <Todo />
         </div>
 
-        {/* ✅ 오른쪽: 사용자 정보 + 이미지 */}
         <div className="flex-1 border rounded p-4 space-y-4">
           {/* 사용자 정보 */}
           <div>

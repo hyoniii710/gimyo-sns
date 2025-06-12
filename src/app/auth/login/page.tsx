@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   // 로그인 폼의 입력값(이메일, 비밀번호)을 상태로 관리.
   const [form, setForm] = useState({
     email: "",
@@ -14,7 +16,6 @@ export default function LoginPage() {
   // 로딩 상태를 관리.
   const [isLoading, setIsLoading] = useState(false);
 
-  const router = useRouter();
   const supabase = createSupabaseBrowserClient();
   // 입력값 변경 핸들러: 입력 필드 값이 변경될 때마다 상태를 업데이트.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,36 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+![스크린샷 2025-06-12 오후 2 30 05](https://github.com/user-attachments/assets/8e1e7088-f80b-4087-988e-e5072c578939)
+# gimyo-sns
 
-## Getting Started
+**gimyo-sns**는 최신 프론트엔드 스택(React, TypeScript, Next.js, Supabase, Tailwind CSS)으로 개발한 개인 SNS 포트폴리오 프로젝트입니다.
 
-First, run the development server:
+## 주요 기능
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 회원가입 / 로그인
+- 게시글 작성, 수정, 삭제 (CRUD)
+- 댓글 및 좋아요
+- 이미지 업로드
+- 최신 FE 스택 적용: React + TypeScript + Next.js + Supabase + Tailwind CSS
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 주요 페이지
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **메인 홈**: 오늘 날씨, TODO, 내 정보, 랜덤 사진, 다크모드
+- **로그인/회원가입**: 기본 인증 및 회원 정보 입력(이름, 나이, 성별, 전화번호, 이메일)
+- **나의 정보**: 로그인 후 내 정보 확인
+- **일기장**: 글/사진 업로드, 댓글, 좋아요, 상세/수정/삭제/목록
+- **가계부**: 수입/지출 추가/수정/삭제, 카테고리별 관리, 통계(카테고리/달력별)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---

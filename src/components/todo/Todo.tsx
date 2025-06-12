@@ -3,14 +3,15 @@
 
 import { useState, useEffect } from "react";
 
-interface Todo {
-  todoId: number;
-  todoText: string;
-  todoDone: boolean;
+// ✅ Todo 항목 하나의 타입 정의
+interface TodoType {
+  todoId: number; // 각 Todo의 고유한 ID (Date.now() 등으로 생성)
+  todoText: string; // 할 일 내용
+  todoDone: boolean; // 완료 여부 (true면 완료됨)
 }
 
 export default function Todo() {
-  const [todoArr, setTodoArr] = useState<Todo[]>([]);
+  const [todoArr, setTodoArr] = useState<TodoType[]>([]);
   const [inputValue, setInputValue] = useState("");
 
   // 저장!

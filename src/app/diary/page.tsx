@@ -70,6 +70,16 @@ export default function DiaryPage() {
     }
   }, [mode, selectedEntry]);
 
+  const formatKoreanDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      weekday: "long",
+    }).format(date);
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -151,6 +161,7 @@ export default function DiaryPage() {
 
   const handleSelectEntry = (entry: DiaryEntry) => {
     setSelectedEntry(entry);
+    setImagePreviewUrl(entry.imageUrl);
     setMode("view");
   };
 
@@ -196,7 +207,10 @@ export default function DiaryPage() {
         <div className="flex-1 border rounded p-4 flex flex-col justify-between space-y-2">
           {mode === "view" && selectedEntry ? (
             <div className="text-sm text-gray-700 space-y-2">
-              <p className="text-left text-gray-500">{selectedEntry.date}</p>
+              <p className="text-left text-gray-500">
+                {formatKoreanDate(selectedEntry.date)}
+              </p>
+
               <p>
                 날씨 : {selectedEntry.weather ?? "❓"} 기분 :{" "}
                 {selectedEntry.mood ?? "❓"}
@@ -326,7 +340,7 @@ export default function DiaryPage() {
                 onClick={() => handleSelectEntry(entry)}
                 className="cursor-pointer hover:underline"
               >
-                {entry.date} : {entry.title}
+                {formatKoreanDate(entry.date)} : {entry.title}
               </li>
             ))}
           </ul>

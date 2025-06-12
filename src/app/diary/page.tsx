@@ -43,14 +43,32 @@ export default function DiaryPage() {
 
     const posts: DiaryEntry[] = JSON.parse(stored);
     setDiaryList(posts);
-    setSelectedEntry(posts[posts.length - 1]); // 최신 글 선택
+    setSelectedEntry(posts[posts.length - 1]);
   };
 
   useEffect(() => {
-    if (mode === "view") {
-      fetchAllPosts();
-    }
+    if (mode === "view") fetchAllPosts();
   }, [mode]);
+
+  useEffect(() => {
+    if (mode === "edit" && selectedEntry) {
+      setTitle(selectedEntry.title);
+      setContent(selectedEntry.content);
+      setDate(selectedEntry.date);
+      setImagePreviewUrl(selectedEntry.imageUrl);
+      setSelectedMood(selectedEntry.mood ?? null);
+      setSelectedWeather(selectedEntry.weather ?? null);
+    } else if (mode === "new") {
+      setTitle("");
+      setContent("");
+      setDate("");
+      setImage(null);
+      setImagePreviewUrl(null);
+      setSelectedMood(null);
+      setSelectedWeather(null);
+      setSelectedEntry(null);
+    }
+  }, [mode, selectedEntry]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -65,7 +83,6 @@ export default function DiaryPage() {
     }
   };
 
-  // 글쓰기 모드로 전환 핸들러
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -87,33 +104,60 @@ export default function DiaryPage() {
 
     setMode("view");
     setImage(null);
-    fetchAllPosts(); // 글 등록 후 목록 갱신
+    fetchAllPosts();
   };
 
-  // 글 삭제 핸들러
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEntry) return;
+
+    const stored = localStorage.getItem("diaryPosts");
+    const posts: DiaryEntry[] = stored ? JSON.parse(stored) : [];
+
+    const updatedPosts = posts.map((post) =>
+      post.id === selectedEntry.id
+        ? {
+            ...post,
+            title,
+            content,
+            date,
+            imageUrl: imagePreviewUrl,
+            mood: selectedMood ?? "",
+            weather: selectedWeather ?? "",
+          }
+        : post
+    );
+
+    localStorage.setItem("diaryPosts", JSON.stringify(updatedPosts));
+    setMode("view");
+    fetchAllPosts();
+  };
+
   const handleDelete = () => {
     if (!confirm("정말 삭제하시겠습니까?")) return;
 
     const stored = localStorage.getItem("diaryPosts");
-    if (!stored) return;
+    if (!stored || !selectedEntry) return;
 
     const posts: DiaryEntry[] = JSON.parse(stored);
-    if (posts.length > 0) {
-      posts.pop();
-      localStorage.setItem("diaryPosts", JSON.stringify(posts));
-    }
+    const updatedPosts = posts.filter((post) => post.id !== selectedEntry.id);
 
-    // 상태 초기화
-    setTitle("");
-    setContent("");
-    setDate("");
-    setImage(null);
-    setImagePreviewUrl(null);
-    setSelectedMood(null);
-    setSelectedWeather(null);
+    localStorage.setItem("diaryPosts", JSON.stringify(updatedPosts));
 
-    fetchAllPosts(); // 삭제 후 목록 갱신
+    setSelectedEntry(null);
+    setMode("view");
+    fetchAllPosts();
   };
+
+  const handleSelectEntry = (entry: DiaryEntry) => {
+    setSelectedEntry(entry);
+    setMode("view");
+  };
+
+  const uniqueDiaryList = diaryList.reduce<DiaryEntry[]>((acc, cur) => {
+    if (!acc.some((entry) => entry.id === cur.id)) acc.push(cur);
+    return acc;
+  }, []);
 
   return (
     <div className="p-6 bg-white rounded-lg">
@@ -122,12 +166,11 @@ export default function DiaryPage() {
       </div>
 
       <div className="flex gap-6">
-        {/* 왼쪽: 이미지 미리보기 */}
         <div className="flex-1 border rounded p-4 flex flex-col items-center">
           <div className="w-full h-64 bg-gray-100 flex items-center justify-center rounded overflow-hidden">
-            {selectedEntry?.imageUrl ? (
+            {imagePreviewUrl ? (
               <img
-                src={selectedEntry.imageUrl}
+                src={imagePreviewUrl}
                 alt="미리보기"
                 className="object-cover w-full h-full"
               />
@@ -150,11 +193,10 @@ export default function DiaryPage() {
           />
         </div>
 
-        {/* 오른쪽: 내용 */}
         <div className="flex-1 border rounded p-4 flex flex-col justify-between space-y-2">
           {mode === "view" && selectedEntry ? (
             <div className="text-sm text-gray-700 space-y-2">
-              <p className="text-right text-gray-500">{selectedEntry.date}</p>
+              <p className="text-left text-gray-500">{selectedEntry.date}</p>
               <p>
                 날씨 : {selectedEntry.weather ?? "❓"} 기분 :{" "}
                 {selectedEntry.mood ?? "❓"}
@@ -169,11 +211,13 @@ export default function DiaryPage() {
                   >
                     새 글
                   </button>
-                  <button className="bg-gray-200 px-4 py-1 rounded">
+                  <button
+                    className="bg-gray-200 px-4 py-1 rounded"
+                    onClick={() => setMode("edit")}
+                  >
                     수정
                   </button>
                 </div>
-
                 <button
                   className="bg-red-400 px-4 py-1 rounded text-white hover:bg-red-500"
                   onClick={handleDelete}
@@ -183,7 +227,10 @@ export default function DiaryPage() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-2">
+            <form
+              onSubmit={mode === "edit" ? handleUpdate : handleSubmit}
+              className="space-y-2"
+            >
               <label className="text-sm font-bold">Date</label>
               <input
                 type="date"
@@ -208,8 +255,6 @@ export default function DiaryPage() {
                 onChange={(e) => setContent(e.target.value)}
                 required
               />
-
-              {/* 감정 + 날씨 선택 */}
               <div className="flex flex-col">
                 <label className="text-sm font-bold mb-1">
                   오늘 기분 / 날씨
@@ -230,7 +275,6 @@ export default function DiaryPage() {
                       </button>
                     ))}
                   </div>
-
                   <div className="flex gap-2 items-center">
                     <span className="text-sm text-gray-600">날씨</span>
                     {weatherOptions.map((weather) => (
@@ -250,7 +294,6 @@ export default function DiaryPage() {
                   </div>
                 </div>
               </div>
-
               <div className="flex justify-between gap-2 pt-2">
                 <button
                   type="button"
@@ -263,7 +306,7 @@ export default function DiaryPage() {
                   type="submit"
                   className="w-1/2 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded"
                 >
-                  등록
+                  {mode === "edit" ? "수정 완료" : "등록"}
                 </button>
               </div>
             </form>
@@ -271,17 +314,16 @@ export default function DiaryPage() {
         </div>
       </div>
 
-      {/* 하단: 일기 목록 */}
       <div className="bg-yellow-50 mt-6 border rounded p-4">
         <h2 className="font-bold mb-2">📚 일기 목록</h2>
-        {diaryList.length === 0 ? (
+        {uniqueDiaryList.length === 0 ? (
           <p className="text-sm text-gray-500">작성된 일기가 없습니다.</p>
         ) : (
           <ul className="space-y-1 text-sm">
-            {[...diaryList].reverse().map((entry) => (
+            {[...uniqueDiaryList].reverse().map((entry) => (
               <li
                 key={entry.id}
-                onClick={() => setSelectedEntry(entry)}
+                onClick={() => handleSelectEntry(entry)}
                 className="cursor-pointer hover:underline"
               >
                 {entry.date} : {entry.title}

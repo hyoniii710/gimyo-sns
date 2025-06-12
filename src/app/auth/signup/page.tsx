@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import "../../../styles/globals.css"; // 글로벌 스타일을 가져온다.
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -14,7 +13,7 @@ export default function SignUpPage() {
     password: "",
     name: "",
     age: "",
-    gender: "male", // 성별 male, female로 저장
+    gender: "female", // 성별 male, female로 저장
     phone: "",
   });
 

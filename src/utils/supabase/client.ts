@@ -1,8 +1,5 @@
-import { createBrowserClient } from "@supabase/ssr";
+// utils/supabase/client.ts
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 
-export function createSupabaseBrowserClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+export const createSupabaseBrowserClient = () =>
+  createPagesBrowserClient<Database>(); // 제네릭 타입은 생략 가능

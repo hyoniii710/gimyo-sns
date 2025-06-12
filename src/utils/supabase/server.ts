@@ -1,18 +1,7 @@
-import { createServerClient } from "@supabase/ssr";
+// utils/supabase/server.ts
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
-export async function createSupabaseServerClient() {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        // set, remove는 서버에서 사용 불가
-      },
-    }
-  );
+export function createSupabaseServerClient() {
+  return createServerComponentClient({ cookies });
 }

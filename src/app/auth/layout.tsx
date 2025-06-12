@@ -4,12 +4,10 @@ import "../../styles/globals.css";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="ko">
-      <body className="bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-          {children}
-        </div>
-      </body>
-    </html>
+    <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        {children}
+      </div>
+    </div>
   );
 }

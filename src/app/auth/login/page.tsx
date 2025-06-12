@@ -1,8 +1,8 @@
-"user client";
+"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createBrowserClient } from "@supabase/ssr";
-// import "../../../styles/globals.css"; // 글로벌 스타일을 가져온다.
+import { createSupabaseBrowserClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
   // 로그인 폼의 입력값(이메일, 비밀번호)을 상태로 관리.
@@ -15,11 +15,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
+  const supabase = createSupabaseBrowserClient();
   // 입력값 변경 핸들러: 입력 필드 값이 변경될 때마다 상태를 업데이트.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });

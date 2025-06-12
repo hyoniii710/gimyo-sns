@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
+// import "../../../styles/globals.css"; // 글로벌 스타일을 가져온다.
 
 export default function LoginPage() {
   // 로그인 폼의 입력값(이메일, 비밀번호)을 상태로 관리.
@@ -46,19 +47,13 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-md border">
-      {/* 상단 탭
-      <div className="flex mb-6">
-        <button className="px-4 py-2 border rounded-tl-lg border-b-0 bg-gray-100">Home</button>
-        <button className="px-4 py-2 border-t border-b-0 bg-gray-100">Diary</button>
-        <button className="px-4 py-2 border-t border-b-0 border-r rounded-tr-lg bg-white font-bold">MoneyBook</button>
-      </div> */}
       {/* 환영 메시지 */}
       <div className="text-center text-green-700 text-xl font-semibold mb-2">
         GIMYO BLOG에 오신것을 환영합니다.
       </div>
       {/* 하트 아이콘 */}
       <div className="flex justify-center my-4">
-        <span className="text-4xl text-green-600">♥</span>
+        <span className="text-5xl text-green-800">♥</span>
       </div>
       {/* 폼 */}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -92,7 +87,7 @@ export default function LoginPage() {
         <button
           type="button"
           className="bg-blue-200 text-blue-900 px-4 py-2 rounded w-full hover:bg-blue-300"
-          onClick={() => router.push("/signup")}
+          onClick={() => router.push("/auth/signup")}
         >
           Join
         </button>

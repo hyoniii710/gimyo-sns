@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
+import "../../../styles/globals.css"; // 글로벌 스타일을 가져온다.
 
 export default function SignUpPage() {
   const router = useRouter();

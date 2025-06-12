@@ -3,7 +3,6 @@
 설명:
 게시글 수정 폼에서 입력받은 값으로 데이터 업데이트
 */
-
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -33,6 +32,7 @@ export default function DiaryEditPage() {
     fetchPost();
   }, [postId]);
 
+  // 게시글 수정 핸들러
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     const { error } = await supabase

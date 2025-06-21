@@ -6,7 +6,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        samlip: ['"SDSamliphopangche_Outline"', "sans-serif"],
+        samlip: ['"SDSamliphopangche_Basic"', "sans-serif"],
       },
     },
   },

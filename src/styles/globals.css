@@ -14,3 +14,8 @@ body {
   font-family: "SDSamliphopangche_Basic", sans-serif;
   font-weight: 700;
 }
+
+/* global.css 하단에 추가 */
+.react-calendar {
+  font-family: "SDSamliphopangche_Basic", sans-serif !important;
+}

@@ -32,14 +32,15 @@ export default async function HomePage() {
       </div>
 
       <div className="flex gap-6">
-        <div className="flex-1 border rounded p-4 flex justify-center">
+        <div className="flex-1 border rounded p-4 flex flex-col items-center gap-4">
+          <p>오늘 할 일을 적어보세요!</p>
           <Todo />
         </div>
 
         <div className="flex-1 border rounded p-4 space-y-4">
           {/* 사용자 정보 */}
           <div className="pb-2 font-bold">
-            <p>👤 반가워요 {userName} 님 :)</p>
+            <p className="pb-2 text-right">👤 반가워요 {userName} 님 :)</p>
             <UserLocation /> {/* 현재 위치 표시 */}
             <UserWeather />
           </div>

@@ -1,10 +1,13 @@
+// tailwind.config.js
 module.exports = {
   content: [
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx}", // 경로 확인
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        samlip: ['"SDSamliphopangche_Outline"', "sans-serif"],
+      },
+    },
   },
-  plugins: [],
 };

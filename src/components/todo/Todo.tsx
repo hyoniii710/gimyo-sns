@@ -59,7 +59,7 @@ export default function Todo() {
   };
 
   return (
-    <div className="w-[320px] h-[568px] border-[3px] border-black rounded-[16px] bg-[#abc1d1] p-3 relative">
+    <div className="w-[320px] h-[578px] border-[3px] border-black rounded-[16px] bg-[#abc1d1] p-3 relative">
       <h1 className="flex justify-center items-center gap-2 text-center text-black text-2xl border-b border-gray-300 mb-3">
         <p>🍀</p>
         <p className="font-bold">TO DO LIST</p>

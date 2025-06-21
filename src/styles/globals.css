@@ -1,9 +1,16 @@
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
 @import "tailwindcss";
 
 /* 선택: font-family만 유지 */
+/* 출처: 눈누 - 삼립호빵체 */
+@font-face {
+  font-family: "SDSamliphopangche_Basic";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts-20-12@1.0/SDSamliphopangche_Basic.woff")
+    format("woff");
+  font-weight: 700;
+  font-style: normal;
+}
+
 body {
-  font-family: sans-serif;
+  font-family: "SDSamliphopangche_Basic", sans-serif;
+  font-weight: 700;
 }

@@ -8,10 +8,11 @@ import "react-calendar/dist/Calendar.css";
 
 // 카테고리별 색상 정의
 const colorMap: Record<string, string> = {
-  운동: "bg-orange-400",
+  일정: "bg-orange-400",
   식사: "bg-sky-400",
-  일정: "bg-purple-600",
+  운동: "bg-purple-600",
   공부: "bg-yellow-300",
+  todo: "bg-green-400", // ✅ 추가
 };
 
 // 일정 타입
@@ -38,10 +39,17 @@ export default function MyCalendar() {
 
   // 일정 불러오기 (처음 1번)
   useEffect(() => {
-    const saved = localStorage.getItem("calendarSchedules");
-    if (saved) {
-      setSchedules(JSON.parse(saved));
-    }
+    const sync = () => {
+      const saved = localStorage.getItem("calendarSchedules");
+      if (saved) {
+        setSchedules(JSON.parse(saved));
+      }
+    };
+
+    sync(); // 초기 한번
+
+    window.addEventListener("updateCalendar", sync); // ✅ 커스텀 이벤트 수신
+    return () => window.removeEventListener("updateCalendar", sync);
   }, []);
 
   // 일정 저장
@@ -128,16 +136,27 @@ export default function MyCalendar() {
                   >
                     <p className="text-sm">
                       <span
-                        className={`inline-block w-2 h-2 mr-1 rounded-full ${colorMap[s.category]} `}
+                        className={`inline-block w-2 h-2 mr-1 rounded-full ${colorMap[s.category]}`}
                       />
                       [{s.category}] {s.content}
                     </p>
-                    <button
-                      onClick={() => handleDelete(s.id)}
-                      className="text-red-400 text-xs"
-                    >
-                      삭제
-                    </button>
+                    {s.category === "todo" ? (
+                      <button
+                        className="text-gray-400 text-xs cursor-not-allowed"
+                        onClick={() =>
+                          alert("[todo]는 Todo 탭에서 삭제하세요.")
+                        }
+                      >
+                        삭제
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleDelete(s.id)}
+                        className="text-red-400 text-xs"
+                      >
+                        삭제
+                      </button>
+                    )}
                   </li>
                 ))
               )}
@@ -157,8 +176,8 @@ export default function MyCalendar() {
                 className="border rounded px-2 py-1 text-sm w-full"
               >
                 <option>일정</option>
-                <option>운동</option>
                 <option>식사</option>
+                <option>운동</option>
                 <option>공부</option>
               </select>
 

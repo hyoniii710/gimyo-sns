@@ -17,6 +17,32 @@ export default function Todo() {
   // 저장!
   const saveTodos = (todos: TodoType[]) => {
     localStorage.setItem("myTodos", JSON.stringify(todos));
+
+    const calendarKey = "calendarSchedules";
+    const existing = JSON.parse(localStorage.getItem(calendarKey) || "[]");
+
+    const todayStr = new Date().toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const newSchedules = todos.map((todo) => ({
+      id: todo.todoId,
+      date: todayStr,
+      category: "todo",
+      content: todo.todoText,
+    }));
+
+    const merged = [
+      ...existing.filter((s: any) => s.category !== "todo"),
+      ...newSchedules,
+    ];
+
+    localStorage.setItem(calendarKey, JSON.stringify(merged));
+
+    // 커스텀 이벤트를 dispatch해야 MyCalendar가 감지함!
+    window.dispatchEvent(new Event("updateCalendar"));
   };
 
   // 불러오기!

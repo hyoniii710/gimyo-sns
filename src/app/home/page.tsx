@@ -16,7 +16,7 @@ export default async function HomePage() {
     redirect("/auth/login");
   }
 
-  // ✅ 사용자 ID로 user_profiles에서 이름 가져오기
+  // 사용자 ID로 user_profiles에서 이름 가져오기
   const { data: profile, error } = await supabase
     .from("user_profiles")
     .select("name")

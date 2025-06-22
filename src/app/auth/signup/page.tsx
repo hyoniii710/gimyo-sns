@@ -61,7 +61,7 @@ export default function SignUpPage() {
           });
         if (profileError) throw profileError;
         alert("회원가입이 완료되었습니다!");
-        router.push("/login"); // 회원가입 성공 후 로그인 페이지로 이동
+        router.replace("/auth/login"); // 회원가입 성공 후 로그인 페이지로 이동
       }
     } finally {
       setIsLoading(false); // 무조건 로딩 종료

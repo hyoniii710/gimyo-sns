@@ -37,7 +37,8 @@ export default function LoginPage() {
       alert(error.message);
     } else if (data.user) {
       alert("반갑습니다! 로그인 성공!");
-      router.push("/home");
+      // router.push("/home");
+      router.replace("/home");
     }
     setIsLoading(false);
   };

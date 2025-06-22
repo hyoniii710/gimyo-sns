@@ -12,7 +12,7 @@ const colorMap: Record<string, string> = {
   식사: "bg-sky-400",
   운동: "bg-purple-600",
   공부: "bg-yellow-300",
-  todo: "bg-green-400", // ✅ 추가
+  todo: "bg-green-400",
 };
 
 // 일정 타입
@@ -29,15 +29,20 @@ type Value = ValuePiece | [ValuePiece, ValuePiece];
 
 export default function MyCalendar() {
   const [value, setValue] = useState<Value>(new Date());
+
+  //일정 목록을 상태로 관리.
   const [schedules, setSchedules] = useState<ScheduleType[]>([]);
+
+  //새로 추가할 일정의 입력값을 상태로 관리.
   const [newSchedule, setNewSchedule] = useState({
     category: "일정",
     content: "",
   });
 
+  //선택된 날짜를 "yyyy년 M월 d일" 형식의 문자열로 변환
   const selectedDate = format(value as Date, "yyyy년 M월 d일", { locale: ko });
 
-  // 일정 불러오기 (처음 1번)
+  // 일정 불러오기 (초기 한 번)
   useEffect(() => {
     const sync = () => {
       const saved = localStorage.getItem("calendarSchedules");
@@ -46,18 +51,21 @@ export default function MyCalendar() {
       }
     };
 
-    sync(); // 초기 한번
+    sync(); // 위에서 정의한 sync()함수 호출
 
-    window.addEventListener("updateCalendar", sync); // ✅ 커스텀 이벤트 수신
+    //"updateCalendar" 이벤트 발생 시 sync 함수 실행 (todo.tsx 커스텀 이벤트 수신)
+    window.addEventListener("updateCalendar", sync);
+
+    //클린업: 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => window.removeEventListener("updateCalendar", sync);
   }, []);
 
-  // 일정 저장
+  // ------------- saveSchedules() : 일정 저장
   const saveSchedules = (data: ScheduleType[]) => {
     localStorage.setItem("calendarSchedules", JSON.stringify(data));
   };
 
-  // 일정 추가
+  // ------------- handleAdd() : 일정 추가
   const handleAdd = () => {
     if (!newSchedule.content.trim()) return;
 

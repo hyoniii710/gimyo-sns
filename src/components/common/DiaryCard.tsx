@@ -80,7 +80,7 @@ export default function DiaryCard() {
   return (
     <div className="border-2 border-gray-800 rounded overflow-hidden">
       <img
-        src={latestPost?.imageUrl || catImageUrl || ""}
+        src={latestPost?.imageUrl || catImageUrl || null}
         alt="Diary"
         className="w-full h-48 object-cover cursor-pointer"
         onClick={() => router.push("/diary")}

@@ -59,7 +59,8 @@ export default function DiaryPage() {
   useEffect(() => {
     fetchAllPosts();
   }, []);
-  // -------------------- fetchAllPosts() : 포스트 불러오기 함수
+
+  // -------------------- fetchAllPosts() : 일기 목록 불러오기 함수
   const fetchAllPosts = async (selectedId?: string) => {
     const supabase = createSupabaseBrowserClient();
     const {
@@ -71,7 +72,7 @@ export default function DiaryPage() {
       .from("posts")
       .select("*")
       .eq("user_id", user.id)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true }); //작성일 순서대로 정렬
 
     if (error) {
       console.error("❌ 게시글 불러오기 실패:", error);
@@ -115,7 +116,7 @@ export default function DiaryPage() {
     }
   };
 
-  // -------------------- handleUpdate() : 수정 함수
+  // -------------------- handleUpdate() : 업데이트 함수
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createSupabaseBrowserClient();
@@ -165,11 +166,13 @@ export default function DiaryPage() {
     fetchAllPosts(selectedEntry.id);
   };
 
+  // -------------------- handleCancel() : 취소 함수
   const handleCancel = () => {
     setMode("view");
     fetchAllPosts();
   };
 
+  // -------------------- formatKoreanDate() : 문자열 포맷팅 함수
   const formatKoreanDate = (isoDate: string) => {
     const date = new Date(isoDate);
     return new Intl.DateTimeFormat("ko-KR", {
@@ -180,6 +183,8 @@ export default function DiaryPage() {
     }).format(date);
   };
 
+  // -------------------- handleSubmit() : 일기 저장 함수
+  // React의 폼 제출 이벤트 핸들러로, 사용자가 일기를 작성하고 저장 버튼을 눌렀을 때 실행된다.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const supabase = createSupabaseBrowserClient();
@@ -188,6 +193,10 @@ export default function DiaryPage() {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
+    /*
+    비동기(async/await) 사용 이유:
+    네트워크 요청(서버에 사용자 정보 요청)은 시간이 걸릴 수 있으므로,
+    await로 결과를 기다린 뒤 다음 코드를 실행 */
 
     if (userError || !user) {
       alert("로그인 후 사용해주세요.");
@@ -220,6 +229,7 @@ export default function DiaryPage() {
       .select()
       .single(); // insert 후 새 글을 바로 가져옴
 
+    // insertedData : 방금 저장한 일기의 모든 컬럼 값이 객체 형태로 저장되어있음.
     if (error || !insertedData) {
       console.error("❌ 게시글 저장 실패:", error);
       alert("일기 저장에 실패했습니다.");
@@ -231,6 +241,7 @@ export default function DiaryPage() {
     setMode("view");
   };
 
+  // -------------------- uploadImageToSupabase() : 이미지 데이터 저장 함수
   const uploadImageToSupabase = async (file: File): Promise<string | null> => {
     const supabase = createSupabaseBrowserClient();
 
@@ -257,7 +268,7 @@ export default function DiaryPage() {
     return publicUrl;
   };
 
-  // 삭제 함수 추가
+  // -------------------- handleDelete() : 일기 삭제 함수
   const handleDelete = async () => {
     if (!selectedEntry) return;
 

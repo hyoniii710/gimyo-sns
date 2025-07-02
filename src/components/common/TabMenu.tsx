@@ -14,7 +14,7 @@ const tabs = [
 export default function TabMenu() {
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true); // ✅ 로딩 상태 추가
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -24,12 +24,12 @@ export default function TabMenu() {
         setIsAuthenticated(true);
         console.log("👀 클라이언트 세션:", data.session);
       }
-      setLoading(false); // ✅ 세션 확인 완료 후 로딩 종료
+      setLoading(false); // 세션 확인 완료 후 로딩 종료
     };
     fetchSession();
   }, []);
 
-  if (loading) return null; // ✅ 세션 확인 전까지는 아무 것도 렌더링하지 않음
+  if (loading) return null; // 세션 확인 전까지는 아무 것도 렌더링하지 않음
 
   return (
     <nav className="flex space-x-2 mb-6">

@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+
+// SSR 없이 클라이언트 전용으로 Calendar를 로드
+const Calendar = dynamic(() => import("react-calendar"), { ssr: false });
 
 // 카테고리별 색상 정의
 const colorMap: Record<string, string> = {
@@ -56,16 +59,16 @@ export default function MyCalendar() {
     //"updateCalendar" 이벤트 발생 시 sync 함수 실행 (todo.tsx 커스텀 이벤트 수신)
     window.addEventListener("updateCalendar", sync);
 
-    //클린업: 컴포넌트 언마운트 시 이벤트 리스너 제거
+    //클린업: 컴포넌트가 사라질 때 이벤트 리스너를 제거
     return () => window.removeEventListener("updateCalendar", sync);
   }, []);
 
-  // ------------- saveSchedules() : 일정 저장
+  // --------------- saveSchedules() : 일정 저장
   const saveSchedules = (data: ScheduleType[]) => {
     localStorage.setItem("calendarSchedules", JSON.stringify(data));
   };
 
-  // ------------- handleAdd() : 일정 추가
+  // --------------- handleAdd() : 일정 추가
   const handleAdd = () => {
     if (!newSchedule.content.trim()) return;
 
@@ -76,10 +79,10 @@ export default function MyCalendar() {
       content: newSchedule.content.trim(),
     };
 
-    const updated = [...schedules, newItem];
-    setSchedules(updated);
-    saveSchedules(updated);
-    setNewSchedule({ category: "일정", content: "" });
+    const updated = [...schedules, newItem]; // 기존 일정 + 새 일정
+    setSchedules(updated); // 상태 갱신
+    saveSchedules(updated); // localStorage 갱신
+    setNewSchedule({ category: "일정", content: "" }); // 입력창 초기화
   };
 
   // 일정 삭제

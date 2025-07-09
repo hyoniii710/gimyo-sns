@@ -1,3 +1,5 @@
+// src/app/home/page.tsx
+
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/utils/supabase/server";
 import Todo from "@/components/todo/Todo";
@@ -5,9 +7,11 @@ import UserLocation from "@/components/common/UserLocation";
 import UserWeather from "@/components/common/UserWeather";
 import DiaryCard from "@/components/common/DiaryCard";
 import Calendar from "@/components/common/Calendar";
+import { cookies } from "next/headers";
 
 export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
+
   const {
     data: { session },
   } = await supabase.auth.getSession();

@@ -1,3 +1,4 @@
+// app/auth/signup/page.tsx
 "use client"; // 클라이언트 컴포넌트로 사용
 
 import { useState } from "react";

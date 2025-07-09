@@ -1,103 +1,116 @@
-// src/components/todo/Todo.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 
-// Todo 항목 하나의 타입 정의
-interface TodoType {
-  todoId: number; // 각 Todo의 고유한 ID (Date.now() 등으로 생성)
+// 할 일(Todo) 하나의 타입 정의
+interface TodoItem {
+  todoId: number; // 각 할 일의 고유 ID (Date.now()로 생성)
   todoText: string; // 할 일 내용
-  todoDone: boolean; // 완료 여부 (true면 완료됨)
+  todoDone: boolean; // 완료 여부 (true면 완료)
 }
 
 export default function Todo() {
-  const [todoArr, setTodoArr] = useState<TodoType[]>([]);
+  // 할 일 목록 상태
+  const [todoList, setTodoList] = useState<TodoItem[]>([]);
+  // 입력창 상태
   const [inputValue, setInputValue] = useState("");
 
-  // 저장!
-  const saveTodos = (todos: TodoType[]) => {
+  // 할 일 목록을 localStorage에 저장하는 함수
+  function saveTodosToStorage(todos: TodoItem[]) {
     localStorage.setItem("myTodos", JSON.stringify(todos));
 
+    // 캘린더 일정에도 반영 (아래는 캘린더와 연동하는 예시)
     const calendarKey = "calendarSchedules";
-    const existing = JSON.parse(localStorage.getItem(calendarKey) || "[]");
+    const existingSchedules = JSON.parse(
+      localStorage.getItem(calendarKey) || "[]"
+    );
 
-    const todayStr = new Date().toLocaleDateString("ko-KR", {
+    // 오늘 날짜 문자열 만들기
+    const today = new Date();
+    const todayStr = today.toLocaleDateString("ko-KR", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
 
-    const newSchedules = todos.map((todo) => ({
+    // 오늘의 할 일들을 캘린더 일정 형태로 변환
+    const todaySchedules = todos.map((todo) => ({
       id: todo.todoId,
       date: todayStr,
       category: "todo",
       content: todo.todoText,
     }));
 
-    const merged = [
-      ...existing.filter((s: any) => s.category !== "todo"),
-      ...newSchedules,
+    // 기존 일정 중에서 "todo"가 아닌 것만 남기고, 오늘 할 일 추가
+    const mergedSchedules = [
+      ...existingSchedules.filter((item: any) => item.category !== "todo"),
+      ...todaySchedules,
     ];
 
-    localStorage.setItem(calendarKey, JSON.stringify(merged));
+    localStorage.setItem(calendarKey, JSON.stringify(mergedSchedules));
 
-    // 커스텀 이벤트를 dispatch해야 MyCalendar가 감지함!
+    // 캘린더 갱신을 위해 커스텀 이벤트 발생
     window.dispatchEvent(new Event("updateCalendar"));
-  };
+  }
 
-  // 불러오기!
+  // 컴포넌트가 처음 렌더링될 때 localStorage에서 할 일 목록 불러오기
   useEffect(() => {
     const saved = localStorage.getItem("myTodos");
     if (saved) {
-      setTodoArr(JSON.parse(saved));
+      setTodoList(JSON.parse(saved));
     }
   }, []);
 
-  // 삭제
-  const deleteTodo = (id: number) => {
-    const newTodos = todoArr.filter((todo) => todo.todoId !== id);
-    setTodoArr(newTodos);
-    saveTodos(newTodos);
-  };
+  // 할 일 삭제 함수
+  function handleDeleteTodo(id: number) {
+    // 해당 ID가 아닌 것만 남기기
+    const newTodos = todoList.filter((todo) => todo.todoId !== id);
+    setTodoList(newTodos);
+    saveTodosToStorage(newTodos);
+  }
 
-  // 완료/취소 토글
-  const toggleTodo = (id: number) => {
-    const newTodos = todoArr.map((todo) =>
+  // 할 일 완료/취소 토글 함수
+  function handleToggleTodo(id: number) {
+    const newTodos = todoList.map((todo) =>
       todo.todoId === id ? { ...todo, todoDone: !todo.todoDone } : todo
     );
-    setTodoArr(newTodos);
-    saveTodos(newTodos);
-  };
+    setTodoList(newTodos);
+    saveTodosToStorage(newTodos);
+  }
 
-  // 추가
-  const addTodo = (e: React.FormEvent) => {
+  // 할 일 추가 함수
+  function handleAddTodo(e: React.FormEvent) {
     e.preventDefault();
+    // 입력값이 비어있으면 추가하지 않음
     if (!inputValue.trim()) return;
-    const newTodo: TodoType = {
-      todoId: Date.now(),
+
+    const newTodo: TodoItem = {
+      todoId: Date.now(), // 현재 시각을 ID로 사용
       todoText: inputValue.trim(),
       todoDone: false,
     };
-    const updated = [...todoArr, newTodo];
-    setTodoArr(updated);
-    saveTodos(updated);
-    setInputValue("");
-  };
+
+    const updatedList = [...todoList, newTodo];
+    setTodoList(updatedList);
+    saveTodosToStorage(updatedList);
+    setInputValue(""); // 입력창 비우기
+  }
 
   return (
     <div className="w-[320px] h-[568px] border-[3px] border-black rounded-[16px] bg-[#abc1d1] p-3 relative">
+      {/* 제목 */}
       <h1 className="flex justify-center items-center gap-2 text-center text-black text-2xl border-b border-gray-300 mb-3">
-        <p>🍀</p>
-        <p className="font-bold">TO DO LIST</p>
-        <p>🍀</p>
+        <span>🍀</span>
+        <span className="font-bold">TO DO LIST</span>
+        <span>🍀</span>
       </h1>
 
-      {/* 리스트 */}
+      {/* 할 일 목록 */}
       <ul className="max-h-[420px] overflow-auto space-y-3 pr-2">
-        {todoArr.map((todo) => (
+        {todoList.map((todo) => (
           <li
             key={todo.todoId}
-            onClick={() => toggleTodo(todo.todoId)}
+            onClick={() => handleToggleTodo(todo.todoId)}
             className={`relative cursor-pointer w-[200px] min-h-[40px] p-2 ml-[60px] rounded-md ${
               todo.todoDone
                 ? "bg-[#eaeaea] line-through text-gray-600"
@@ -105,6 +118,7 @@ export default function Todo() {
             }`}
           >
             {todo.todoText}
+
             {/* 말풍선 꼬리 */}
             <span
               className={`absolute top-[10px] -right-2 w-0 h-0 border-b-[16px] border-b-transparent border-l-[16px] ${
@@ -115,8 +129,8 @@ export default function Todo() {
             {/* 삭제 버튼 */}
             <span
               onClick={(e) => {
-                e.stopPropagation();
-                deleteTodo(todo.todoId);
+                e.stopPropagation(); // 부모 클릭 이벤트 막기
+                handleDeleteTodo(todo.todoId);
               }}
               className="absolute left-[-20px] bottom-[2px] w-4 h-4 flex items-center justify-center rounded-full bg-[#eaeaea] text-xs"
             >
@@ -126,9 +140,9 @@ export default function Todo() {
         ))}
       </ul>
 
-      {/* 입력창 */}
+      {/* 할 일 입력창 */}
       <form
-        onSubmit={addTodo}
+        onSubmit={handleAddTodo}
         className="absolute bottom-0 left-0 w-full flex bg-white rounded-b-[10px]"
       >
         <input

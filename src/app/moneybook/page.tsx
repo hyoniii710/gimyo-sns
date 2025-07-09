@@ -1,8 +1,8 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 import Charts from "@/components/common/Charts";
 
 interface Account {
@@ -14,38 +14,16 @@ interface Account {
   type: "income" | "expense";
 }
 
+//localStorage의 "accounts" Key에 저장될 거래내역 타입 상수로 선언
 const ACCOUNTS_KEY = "accounts";
 
 export default function MoneyBookPage() {
   const supabase = createClientComponentClient();
   const router = useRouter();
 
-  // 1) 거래 내역 상태 & 로드 완료 플래그
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // 2) 마운트 시 로컬스토리지에서 복원
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const raw = localStorage.getItem(ACCOUNTS_KEY);
-    if (raw) {
-      try {
-        setAccounts(JSON.parse(raw));
-      } catch {
-        console.warn("accounts 파싱 실패");
-      }
-    }
-    setIsLoaded(true);
-  }, []);
-
-  // 3) accounts가 바뀔 때, 복원 완료 후에만 로컬스토리지에 저장
-  useEffect(() => {
-    if (!isLoaded || typeof window === "undefined") return;
-    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
-  }, [accounts, isLoaded]);
-
-  // 4) 프로필 가져오기
+  // 유저 이름 불러오기
   const [userName, setUserName] = useState("회원");
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return router.push("/auth/login");
@@ -58,15 +36,37 @@ export default function MoneyBookPage() {
     });
   }, [supabase, router]);
 
-  // 5) 월 선택
-  const getCurrentMonth = () => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  };
-  const [month, setMonth] = useState(getCurrentMonth());
+  //1. 거래내역 상태관리
+  const [accounts, setAccounts] = useState<Accounts[]>([]);
 
-  // 6) 폼 토글 & 입력 상태
+  //2. 폼 열림/닫힘 토글
   const [showForm, setShowForm] = useState(false);
+
+  // 복원 완료 여부 (로컬스토리지)
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  //useEffect로 불러오기
+  useEffect(() => {
+    // 컴포넌트가 처음 렌더링될 때(localStorage에서 데이터 불러옴)
+    if (typeof window === "undefined") return; // 서버 사이드 렌더링에서는 로컬스토리지 접근 불가
+    const raw = localStorage.getItem(ACCOUNTS_KEY);
+    if (raw) {
+      try {
+        setAccounts(JSON.parse(raw));
+      } catch {
+        console.log("accounts 데이터 파싱 실패");
+      }
+    }
+    setIsLoaded(true); // raw 데이터가 로드되면 isLoaded를 true로 설정
+  }, []); //빈 배열을 의존성으로 주어 컴포넌트가 처음 렌더링될 때만 실행
+
+  //useEffect로 accounts가 바뀔때 로컬스토리지에 저장하기
+  useEffect(() => {
+    if (!isLoaded || typeof window === "undefined") return; // 로컬스토리지 접근 전 isLoaded가 true인지 확인
+    localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+  }, [accounts, isLoaded]); // accounts가 바뀔 때마다 로컬스토리지에 저장
+
+  //2-1. 폼 입력값 상태
   const [form, setForm] = useState<Omit<Account, "id">>({
     date: "",
     amount: 0,
@@ -75,10 +75,7 @@ export default function MoneyBookPage() {
     type: "expense",
   });
 
-  // 6-1) 편집 중인 ID
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  // 7) 카테고리 옵션
+  //3. 카테고리 옵션
   const expenseCategories = [
     "주거",
     "식비",
@@ -87,9 +84,34 @@ export default function MoneyBookPage() {
     "쇼핑",
     "기타",
   ];
-  const incomeCategories = ["근로소득", "이자소득", "정책지원금", "기타"];
+  const incomeCategories = [
+    "용돈",
+    "근로소득",
+    "이자소득",
+    "정책지원금",
+    "기타",
+  ];
 
-  // 8) 입력 핸들러
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // handleEditInit : 수정할 데이터를 폼에 불러와서 "수정 모드로 진입"시키는 함수
+  const handleEditInit = (id: string) => {
+    // 수정할 거래내역의 ID를 찾고 변수 e에 저장
+    const e = accounts.find((a) => a.id === id);
+    if (!e) return;
+
+    // 찾은 거래내역의 각 값을 form 상태에 채워넣는다
+    setForm({
+      date: e.date,
+      amount: e.amount,
+      category: e.category,
+      memo: e.memo,
+      type: e.type,
+    });
+    setEditingId(id); // setEditing상태에 현재 수정 중인 거래 내역의 id를 저장한다.
+    setShowForm(true); // form을 화면에 보이게 열어준다.
+  };
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -106,87 +128,61 @@ export default function MoneyBookPage() {
     }));
   };
 
-  // 9) 내역 추가
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 수정 모드 : editingId가 있으면 해당 id의 내역을 수정
     if (editingId) {
-      // 수정 모드
       setAccounts((prev) =>
-        prev.map((e) =>
-          e.id === editingId
-            ? { id: editingId, ...form } // 폼 데이터를 그대로 덮어쓰기
-            : e
-        )
+        // id가 editingId와 같은 내역을 찾아서 form의 값으로 업데이트, 다르면 그대로 유지
+        prev.map((a) => (a.id === editingId ? { id: editingId, ...form } : a))
       );
     } else {
-      // — 추가(add) 모드
+      // editingId가 없으면 새로 추가
       setAccounts((prev) => [...prev, { id: Date.now().toString(), ...form }]);
     }
-    // 공통: 폼 초기화
+
     setShowForm(false);
-    setForm({ date: "", amount: 0, category: "", memo: "", type: form.type });
-    setEditingId(null); // 수정 모드 리셋
+    setForm((f) => ({
+      date: "",
+      amount: 0,
+      category: "",
+      memo: "",
+      type: f.type,
+    }));
+    setEditingId(null); // editingId 초기화(수정 모드 종료)
   };
 
-  // 9-1) 내역 수정
-  const handleRemove = (id: string) => {
-    const entry = accounts.find((e) => e.id === id);
-    if (!entry) return;
-
-    // 폼에 채우기
-    setForm({
-      date: entry.date,
-      amount: entry.amount,
-      category: entry.category,
-      memo: entry.memo,
-      type: entry.type,
-    });
-    setEditingId(id); // 여기에 편집 대상 ID 기록
-    setShowForm(true);
-  };
-
-  // 9-2) 내역 삭제 (handleDelete)
   const handleDelete = (id: string) => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
-    setAccounts((prev) => prev.filter((e) => e.id !== id));
+    if (!confirm("정말로 삭제하시겠습니까?")) return;
+
+    setAccounts((prev) => prev.filter((a) => a.id !== id));
   };
-  // 10) 총계 계산
+
+  // 요약 카드 계산 (총 수입 - 총 지출 = 잔액 표시)
   const totalIncome = accounts
     .filter((e) => e.type === "income")
-    .reduce((sum, e) => sum + e.amount, 0);
+    .reduce((s, e) => s + e.amount, 0);
+
   const totalExpense = accounts
     .filter((e) => e.type === "expense")
-    .reduce((sum, e) => sum + e.amount, 0);
-  const balance = totalIncome - totalExpense;
+    .reduce((s, e) => s + e.amount, 0);
 
-  // 예시: 항상 “수입” 차트를 표시하고 싶다면
-  const chartView: "income" | "expense" = "income";
+  const balance = totalIncome - totalExpense;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      {/* 헤더 */}
       <header className="flex justify-between mb-4">
         <div className="flex items-center gap-2">
-          <img src="/chick.png" className="w-10 h-10 rounded-full" />
+          <img src="/chick2.png" className="w-10 h-10 rounded-full" />
           <span className="font-medium text-lg">{userName}님</span>
         </div>
-        <input
-          type="month"
-          value={month}
-          onChange={(e) => setMonth(e.target.value)}
-          className="border rounded px-2 py-1"
-        />
       </header>
 
-      {/* 요약 카드 */}
+      {/* 요약 카드 자리 */}
       <section className="grid grid-cols-2 gap-4 mb-6">
-        {/* 총 수입 */}
         <div className="p-4 bg-white rounded-lg shadow">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-500">총 수입</p>
-          </div>
-
+          <p className="text-sm text-gray-500">총 수입</p>
           <p className="mt-1 text-2xl font-bold">
             {totalIncome.toLocaleString()}원
           </p>
@@ -194,18 +190,15 @@ export default function MoneyBookPage() {
             잔액 {balance.toLocaleString()}원
           </p>
         </div>
-        {/* 총 지출 */}
         <div className="p-4 bg-white rounded-lg shadow">
-          <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-500">총 지출</p>
-          </div>
+          <p className="text-sm text-gray-500">총 지출</p>
           <p className="mt-1 text-2xl font-bold">
             {totalExpense.toLocaleString()}원
           </p>
         </div>
       </section>
 
-      {/* ─── 수입/지출 차트 가로 정렬 ─── */}
+      {/* 차트 자리 */}
       <section className="mb-8 flex flex-col md:flex-row gap-8">
         {/* 수입 차트 */}
         <div className="flex-1">
@@ -234,44 +227,45 @@ export default function MoneyBookPage() {
 
       {/* 내역 추가 버튼 */}
       <button
+        className="mb-6 w-full bg-yellow-500 text-white py-2 rounded"
         onClick={() => setShowForm(!showForm)}
-        className="mb-6 w-full bg-yellow-500 text-white py-2 rounded hover:bg-yellow-600"
       >
         {showForm ? "폼 닫기" : "내역 추가하기"}
       </button>
 
-      {/* 내역 추가 폼 */}
+      {/* 내역 입력 폼 */}
       {showForm && (
         <form
-          onSubmit={handleSubmit}
           className="mb-6 bg-white p-4 rounded-lg shadow space-y-4"
+          onSubmit={handleSubmit}
         >
+          {/* 수입/지출 선택 */}
           <div className="flex space-x-2">
             {(["expense", "income"] as const).map((t) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => setForm((f) => ({ ...f, type: t }))}
-                className={`flex-1 py-1 rounded ${
-                  form.type === t
-                    ? t === "expense"
-                      ? "bg-red-500 text-white"
-                      : "bg-green-500 text-white"
-                    : "bg-gray-100 text-gray-500"
-                }`}
+                className={`flex-1 py-1 rounded
+                    ${
+                      form.type === t
+                        ? t === "expense"
+                          ? "bg-red-500 text-white"
+                          : "bg-green-500 text-white"
+                        : "bg-gray-100 text-gray-500"
+                    } `}
               >
                 {t === "expense" ? "지출" : "수입"}
               </button>
             ))}
           </div>
-
           <input
             type="date"
             name="date"
             value={form.date}
             onChange={handleChange}
-            className="w-full border p-2 rounded"
             required
+            className="w-full border p-2 rounded"
           />
           <input
             type="text"
@@ -279,15 +273,15 @@ export default function MoneyBookPage() {
             value={form.amount || ""}
             onChange={handleChange}
             placeholder="금액"
-            className="w-full border p-2 rounded"
             required
+            className="w-full border p-2 rounded"
           />
           <select
             name="category"
             value={form.category}
             onChange={handleChange}
-            className="w-full border p-2 rounded"
             required
+            className="w-full border p-2 rounded"
           >
             <option value="">카테고리 선택</option>
             {(form.type === "expense"
@@ -309,48 +303,42 @@ export default function MoneyBookPage() {
           />
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+            className="w-full bg-blue-500 text-white py-2 rounded"
           >
             저장하기
           </button>
         </form>
       )}
 
-      {/* 상세 내역 리스트 */}
+      {/* 내역 리스트 */}
       <section className="space-y-4">
         {accounts.map((entry) => (
           <div
             key={entry.id}
             className="flex justify-between items-center p-3 bg-white rounded-lg shadow"
           >
-            {/* 왼쪽: 날짜/카테고리/메모 */}
             <div>
-              <p className="text-sm text-gray-500">
-                {format(new Date(entry.date), "yyyy-MM-dd")}
-              </p>
+              <p className="text-sm text-gray-500">{entry.date}</p>
               <p className="font-medium text-gray-700">
                 [{entry.category}] {entry.memo}
               </p>
             </div>
-            {/* 오른쪽: 금액과 삭제를 세로로 정렬 */}
-            <div className="flex flex-low items-end min-w-[120px]">
+            <div className="flex items-center">
               <p
-                className={`font-semibold pr-7 ${
-                  entry.type === "income" ? "text-green-600" : "text-red-600"
-                }`}
+                className={`font-semibold ${entry.type === "income" ? "text-green-600" : "text-red-600"} mr-15`}
               >
                 {entry.type === "income" ? "+" : "-"}
                 {entry.amount.toLocaleString()}원
               </p>
               <button
-                className="text-gray-400 pr-1.5 text-sm hover:text-blue-500 mt-1"
-                onClick={() => handleRemove(entry.id)}
+                onClick={() => handleEditInit(entry.id)}
+                className="text-sm text-gray-400 hover:text-blue-500 mr-2"
               >
                 수정
               </button>
               <button
-                className="text-gray-400 text-sm hover:text-red-500 mt-1"
                 onClick={() => handleDelete(entry.id)}
+                className="text-sm text-gray-400 hover:text-red-500"
               >
                 삭제
               </button>

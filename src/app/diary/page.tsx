@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { createSupabaseBrowserClient } from "@/utils/supabase/client";
+import Image from "next/image";
 
 // 1) 타입 정의 및 모드 상태관리
 interface DiaryEntry {
@@ -306,15 +307,19 @@ export default function DiaryPage() {
       <div className="flex gap-6">
         {/* 이미지 업로드 영역 */}
         <div className="flex-1 border rounded p-4 flex flex-col items-center">
-          <div className="w-full h-64 bg-gray-100 flex items-center justify-center rounded overflow-hidden">
+          <div className="relative w-full h-64 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
             {imagePreviewUrl || selectedEntry?.imageUrl ? (
-              <img
-                src={imagePreviewUrl || selectedEntry?.imageUrl || ""}
+              <Image
+                src={imagePreviewUrl || selectedEntry!.imageUrl!}
                 alt="미리보기"
-                className="w-full h-full object-contain"
+                fill
+                style={{ objectFit: "contain" }}
+                priority
               />
             ) : (
-              <p className="text-gray-400">이미지를 업로드해주세요.</p>
+              <p className="text-gray-400 text-center">
+                이미지를 업로드해주세요.
+              </p>
             )}
           </div>
           <button

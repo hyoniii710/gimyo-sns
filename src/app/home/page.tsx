@@ -7,7 +7,7 @@ import UserLocation from "@/components/common/UserLocation";
 import UserWeather from "@/components/common/UserWeather";
 import DiaryCard from "@/components/common/DiaryCard";
 import Calendar from "@/components/common/Calendar";
-import { cookies } from "next/headers";
+import LogoutButton from "@/components/common/LogoutButton";
 
 export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
@@ -21,7 +21,7 @@ export default async function HomePage() {
   }
 
   // 사용자 ID로 user_profiles에서 이름 가져오기
-  const { data: profile, error } = await supabase
+  const { data: profile } = await supabase
     .from("user_profiles")
     .select("name")
     .eq("id", session.user.id)
@@ -31,8 +31,11 @@ export default async function HomePage() {
 
   return (
     <div className="p-6 bg-white rounded-lg ">
-      <div className="text-center text-green-700 text-xl font-semibold mb-6">
-        GIMYO BLOG에 오신것을 환영합니다.
+      <div className="flex justify-between items-center mb-6">
+        <p className="text-green-700 text-xl font-semibold">
+          GIMYO BLOG에 오신것을 환영합니다.
+        </p>
+        <LogoutButton />
       </div>
 
       <div className="flex gap-6">

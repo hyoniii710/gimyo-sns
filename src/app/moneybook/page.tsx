@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import Charts from "@/components/common/Charts";
+import Image from "next/image";
 
 interface Account {
   id: string;
@@ -37,7 +38,7 @@ export default function MoneyBookPage() {
   }, [supabase, router]);
 
   //1. 거래내역 상태관리
-  const [accounts, setAccounts] = useState<Accounts[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   //2. 폼 열림/닫힘 토글
   const [showForm, setShowForm] = useState(false);
@@ -53,11 +54,15 @@ export default function MoneyBookPage() {
     if (raw) {
       try {
         setAccounts(JSON.parse(raw));
+        setIsLoaded(true); // 데이터가 로드되었음을 표시
       } catch {
         console.log("accounts 데이터 파싱 실패");
+        setIsLoaded(true);
       }
+    } else {
+      // raw가 없을 때에도 저장 이펙트 발동을 막기 위해 false→true로 바꿔줍니다
+      setIsLoaded(true);
     }
-    setIsLoaded(true); // raw 데이터가 로드되면 isLoaded를 true로 설정
   }, []); //빈 배열을 의존성으로 주어 컴포넌트가 처음 렌더링될 때만 실행
 
   //useEffect로 accounts가 바뀔때 로컬스토리지에 저장하기
@@ -173,8 +178,15 @@ export default function MoneyBookPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <header className="flex justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <img src="/chick2.png" className="w-10 h-10 rounded-full" />
+        <div className="relative flex items-center gap-2">
+          <Image
+            src="/chick2.png"
+            alt="사용자 프로필"
+            width={40}
+            height={40}
+            className="rounded-full"
+            priority
+          />
           <span className="font-medium text-lg">{userName}님</span>
         </div>
       </header>

@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from "react";
 
-// 할 일(Todo) 하나의 타입 정의
+// 1) 할 일(Todo) 하나의 타입 정의
 interface TodoItem {
-  todoId: number; // 각 할 일의 고유 ID (Date.now()로 생성)
+  todoId: number; // 각 할 일의 고유 ID
   todoText: string; // 할 일 내용
-  todoDone: boolean; // 완료 여부 (true면 완료)
+  todoDone: boolean; // 완료 여부
+}
+
+// 2) 캘린더 스케줄 아이템 타입 정의
+interface ScheduleItem {
+  id: number; // 스케줄 고유 ID (todoId와 동일)
+  date: string; // 날짜 문자열 (e.g. "2025년 7월 14일")
+  category: string; // 스케줄 분류 (e.g. "todo")
+  content: string; // 스케줄 내용
 }
 
 export default function Todo() {
@@ -19,9 +27,11 @@ export default function Todo() {
   function saveTodosToStorage(todos: TodoItem[]) {
     localStorage.setItem("myTodos", JSON.stringify(todos));
 
-    // 캘린더 일정에도 반영 (아래는 캘린더와 연동하는 예시)
+    // 캘린더 일정에도 반영
     const calendarKey = "calendarSchedules";
-    const existingSchedules = JSON.parse(
+
+    // — 기존 코드에서는 any로 받아오던 부분을 ScheduleItem[]으로 타입 지정
+    const existingSchedules: ScheduleItem[] = JSON.parse(
       localStorage.getItem(calendarKey) || "[]"
     );
 
@@ -33,23 +43,23 @@ export default function Todo() {
       day: "numeric",
     });
 
-    // 오늘의 할 일들을 캘린더 일정 형태로 변환
-    const todaySchedules = todos.map((todo) => ({
+    // 오늘의 할 일들을 ScheduleItem[] 형태로 변환
+    const todaySchedules: ScheduleItem[] = todos.map((todo) => ({
       id: todo.todoId,
       date: todayStr,
       category: "todo",
       content: todo.todoText,
     }));
 
-    // 기존 일정 중에서 "todo"가 아닌 것만 남기고, 오늘 할 일 추가
-    const mergedSchedules = [
-      ...existingSchedules.filter((item: any) => item.category !== "todo"),
+    // — any 대신 ScheduleItem으로 필터링
+    const mergedSchedules: ScheduleItem[] = [
+      ...existingSchedules.filter(
+        (item: ScheduleItem) => item.category !== "todo"
+      ),
       ...todaySchedules,
     ];
 
     localStorage.setItem(calendarKey, JSON.stringify(mergedSchedules));
-
-    // 캘린더 갱신을 위해 커스텀 이벤트 발생
     window.dispatchEvent(new Event("updateCalendar"));
   }
 
@@ -61,15 +71,14 @@ export default function Todo() {
     }
   }, []);
 
-  // 할 일 삭제 함수
+  // 할 일 삭제
   function handleDeleteTodo(id: number) {
-    // 해당 ID가 아닌 것만 남기기
     const newTodos = todoList.filter((todo) => todo.todoId !== id);
     setTodoList(newTodos);
     saveTodosToStorage(newTodos);
   }
 
-  // 할 일 완료/취소 토글 함수
+  // 할 일 완료/취소 토글
   function handleToggleTodo(id: number) {
     const newTodos = todoList.map((todo) =>
       todo.todoId === id ? { ...todo, todoDone: !todo.todoDone } : todo
@@ -78,14 +87,13 @@ export default function Todo() {
     saveTodosToStorage(newTodos);
   }
 
-  // 할 일 추가 함수
+  // 할 일 추가
   function handleAddTodo(e: React.FormEvent) {
     e.preventDefault();
-    // 입력값이 비어있으면 추가하지 않음
     if (!inputValue.trim()) return;
 
     const newTodo: TodoItem = {
-      todoId: Date.now(), // 현재 시각을 ID로 사용
+      todoId: Date.now(),
       todoText: inputValue.trim(),
       todoDone: false,
     };
@@ -93,7 +101,7 @@ export default function Todo() {
     const updatedList = [...todoList, newTodo];
     setTodoList(updatedList);
     saveTodosToStorage(updatedList);
-    setInputValue(""); // 입력창 비우기
+    setInputValue("");
   }
 
   return (
@@ -118,18 +126,14 @@ export default function Todo() {
             }`}
           >
             {todo.todoText}
-
-            {/* 말풍선 꼬리 */}
             <span
               className={`absolute top-[10px] -right-2 w-0 h-0 border-b-[16px] border-b-transparent border-l-[16px] ${
                 todo.todoDone ? "border-l-[#eaeaea]" : "border-l-[#fee54d]"
               }`}
-            ></span>
-
-            {/* 삭제 버튼 */}
+            />
             <span
               onClick={(e) => {
-                e.stopPropagation(); // 부모 클릭 이벤트 막기
+                e.stopPropagation();
                 handleDeleteTodo(todo.todoId);
               }}
               className="absolute left-[-20px] bottom-[2px] w-4 h-4 flex items-center justify-center rounded-full bg-[#eaeaea] text-xs"
@@ -151,7 +155,7 @@ export default function Todo() {
           placeholder="TO DO..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          className="w-[240px] h-[45px] text-lg px-3 rounded-bl-[10px] outline-none border-none"
+          className="w-[240px] h-[45px] text-lg px-3 rounded-bl-[10px] outline-none"
         />
         <button
           type="submit"

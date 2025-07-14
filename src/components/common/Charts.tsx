@@ -100,7 +100,7 @@ export default function Charts({
             outerRadius={outerRadius}
             innerRadius={innerRadius}
             label={(entry) =>
-              `${((entry.value / data.reduce((s, e) => s + e.value, 0)) * 100).toFixed(0)}%`
+              `${((entry.value! / data.reduce((s, e) => s + e.value, 0)) * 100).toFixed(0)}%`
             }
           >
             {data.map((_, i) => (

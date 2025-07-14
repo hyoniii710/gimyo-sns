@@ -13,18 +13,16 @@ export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     redirect("/auth/login");
   }
 
-  // 사용자 ID로 user_profiles에서 이름 가져오기
   const { data: profile } = await supabase
     .from("user_profiles")
     .select("name")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .single();
 
   const userName = profile?.name ?? "회원";

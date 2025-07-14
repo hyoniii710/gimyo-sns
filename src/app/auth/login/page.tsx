@@ -34,13 +34,18 @@ export default function LoginPage() {
       email: form.email,
       password: form.password,
     });
+
     if (error) {
-      alert(error.message);
+      const msg =
+        error.message === "Invalid login credentials"
+          ? "이메일 또는 비밀번호가 일치하지 않습니다."
+          : error.message;
+      alert(msg);
     } else if (data.user) {
       alert("반갑습니다! 로그인 성공!");
-      // router.push("/home");
       router.replace("/home");
     }
+
     setIsLoading(false);
   };
 

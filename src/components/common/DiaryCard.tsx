@@ -45,12 +45,16 @@ export default function DiaryCard() {
           id: latest.id,
           title: latest.title,
           date: latest.created_at,
-          imageUrl: latest.image_url,
+          // 빈 문자열도 null로 처리
+          imageUrl:
+            latest.image_url && latest.image_url.trim() !== ""
+              ? latest.image_url
+              : null,
           mood: latest.mood,
         });
 
-        // 이미지가 없으면 고양이 이미지 호출
-        if (!latest.image_url) {
+        // 이미지가 없으면 고양이 API로 대체
+        if (!latest.image_url || latest.image_url.trim() === "") {
           const res = await fetch("https://api.thecatapi.com/v1/images/search");
           const catData = await res.json();
           if (catData[0]?.url) {
@@ -64,35 +68,44 @@ export default function DiaryCard() {
   }, []);
 
   const formatKoreanDate = (isoDate: string) => {
-    const date = new Date(isoDate);
     return new Intl.DateTimeFormat("ko-KR", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    }).format(date);
+    }).format(new Date(isoDate));
   };
-  // 만약 최신 글이 없고 고양이 이미지도 없다면
-  // "최근 일기 정보가 없습니다." 메시지를 표시한다.
+
+  // 최신 글도, 고양이 이미지도 없으면 메시지 표시
   if (!latestPost && !catImageUrl) {
     return (
       <div className="text-sm text-gray-400">최근 일기 정보가 없습니다.</div>
     );
   }
-  const imageSrc = latestPost?.imageUrl || catImageUrl!;
 
+  // 빈 문자열·공백 모두 거르고 유효한 URL만 남김
+  const rawUrl = latestPost?.imageUrl;
+  const imageSrc =
+    rawUrl && rawUrl.trim() !== ""
+      ? rawUrl
+      : catImageUrl && catImageUrl.trim() !== ""
+        ? catImageUrl
+        : null;
+
+  // imageSrc가 없을 땐 위의 메시지 로직이 이미 처리했으므로
+  // 여기서는 확실하게 imageSrc가 존재하는 경우만 렌더
   return (
     <div className="w-full max-w-md mx-auto border-2 border-gray-300 rounded overflow-hidden">
-      {/* 1) 자연 비율로 렌더링: width/height 프로퍼티 사용 */}
-      <Image
-        src={imageSrc}
-        alt="Diary"
-        width={500} // 최대 너비에 맞춰 조절
-        height={300} // 가로 세로 비율에 따라 적절히 설정
-        className="w-full h-auto object-contain cursor-pointer"
-        onClick={() => router.push("/diary")}
-      />
+      {imageSrc && (
+        <Image
+          src={imageSrc}
+          alt="Diary"
+          width={500}
+          height={300}
+          className="w-full h-auto object-contain cursor-pointer"
+          onClick={() => router.push("/diary")}
+        />
+      )}
 
-      {/* 2) 이미지 아래에 텍스트 */}
       <div className="p-4 bg-white">
         <p className="text-gray-600 text-sm mb-1">
           {latestPost ? formatKoreanDate(latestPost.date) : "날짜 정보 없음"}{" "}

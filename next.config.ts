@@ -7,9 +7,10 @@ const nextConfig: NextConfig = {
   images: {
     domains: [
       "xhrvspicvhkkykqjhfob.supabase.co", // Supabase
-      "api.thecatapi.com", // The Cat API
+      "api.thecatapi.com", // Cat API 의 메인 엔드포인트
+      "cdn2.thecatapi.com", // ← 여기에 실제 이미지 호스트 이름 추가!
     ],
-    // remotePatterns를 이용해 더 세밀하게 허용할 수도 있습니다.
+
     // remotePatterns: [
     //   {
     //     protocol: "https",
